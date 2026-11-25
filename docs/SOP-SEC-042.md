@@ -34,7 +34,7 @@ No bypass actors are configured by default. Decap CMS compatibility is not claim
 - GitHub CLI is installed and authenticated for local provisioning, or Actions is enabled and configured.
 - The destination repository's organisation policy permits the required token permissions.
 
-The GitHub ruleset create/update API requires repository Administration: write permission for fine-grained tokens.
+The GitHub ruleset create/update API requires repository Administration: write permission for fine-grained tokens. The Actions workflow therefore requires a repository-scoped fine-grained personal access token stored as REPO_GOVERNANCE_PAT; GITHUB_TOKEN does not expose this permission.
 
 ## 5. Procedure
 
