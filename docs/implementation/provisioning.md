@@ -6,7 +6,7 @@
 - An authenticated GitHub identity.
 - Repository Administration: write permission on the destination repository.
 - PowerShell 7 recommended for the local script.
-- Access to GitHub Actions and permission to configure the required token, if using workflow provisioning.
+- Access to GitHub Actions and a repository Actions secret named REPO_GOVERNANCE_PAT containing a fine-grained personal access token with repository Administration: write permission. GITHUB_TOKEN does not expose this permission.
 
 ## Local provisioning
 
