@@ -10,9 +10,10 @@ on:
       - '.github/rulesets/branch-ruleset.json'
       - '.github/workflows/enforce-governance.yml'
 
+# GITHUB_TOKEN does not expose repository Administration: write.
+# The privileged operation uses a repository-scoped fine-grained PAT secret.
 permissions:
   contents: read
-  administration: write
 
 concurrency:
   group: aktops-governance-${{ github.repository }}
@@ -41,15 +42,25 @@ jobs:
             ([.rules[].type] | index("pull_request"))
           ' .github/rulesets/branch-ruleset.json > /dev/null
 
+      - name: Require governance credential
+        env:
+          GOVERNANCE_TOKEN: ${{ secrets.REPO_GOVERNANCE_PAT }}
+        shell: bash
+        run: |
+          if [ -z "$GOVERNANCE_TOKEN" ]; then
+            echo "::error::REPO_GOVERNANCE_PAT is required. Configure a fine-grained token with repository Administration: write."
+            exit 1
+          fi
+
       - name: Apply repository ruleset (create or update)
         env:
-          GH_TOKEN: ${{ secrets.REPO_GOVERNANCE_PAT || secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.REPO_GOVERNANCE_PAT }}
           REPOSITORY: ${{ github.repository }}
         shell: bash
         run: |
           set -euo pipefail
           ruleset_name="$(jq -r '.name' .github/rulesets/branch-ruleset.json)"
-          existing_ids="$(gh api --paginate "/repos/$REPOSITORY/rulesets"             --jq ".[] | select(.name == \"$ruleset_name\") | .id")"
+          existing_ids="$(gh api --paginate "/repos/$REPOSITORY/rulesets" --jq ".[] | select(.name == \"$ruleset_name\") | .id")"
 
           count="$(printf '%s\n' "$existing_ids" | sed '/^$/d' | wc -l | tr -d ' ')"
           if [ "$count" -gt 1 ]; then
@@ -57,9 +68,9 @@ jobs:
             exit 1
           elif [ "$count" -eq 1 ]; then
             ruleset_id="$(printf '%s\n' "$existing_ids" | head -n 1)"
-            gh api --method PUT "/repos/$REPOSITORY/rulesets/$ruleset_id"               -H "Accept: application/vnd.github+json"               -H "X-GitHub-Api-Version: 2022-11-28"               --input .github/rulesets/branch-ruleset.json
+            gh api --method PUT "/repos/$REPOSITORY/rulesets/$ruleset_id" -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" --input .github/rulesets/branch-ruleset.json
             echo "Updated ruleset ID $ruleset_id."
           else
-            gh api --method POST "/repos/$REPOSITORY/rulesets"               -H "Accept: application/vnd.github+json"               -H "X-GitHub-Api-Version: 2022-11-28"               --input .github/rulesets/branch-ruleset.json
+            gh api --method POST "/repos/$REPOSITORY/rulesets" -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" --input .github/rulesets/branch-ruleset.json
             echo "Created ruleset."
           fi
