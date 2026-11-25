@@ -1,0 +1,34 @@
+name: Enforce Repository Governance Baseline
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+      - main
+    paths:
+      - '.github/rulesets/branch-ruleset.json'
+
+permissions:
+  contents: read
+  administration: write
+
+jobs:
+  apply-ruleset:
+    name: Deploy GitHub Ruleset Baseline
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy Branch Protection via GitHub REST API
+        env:
+          GH_TOKEN: ${{ secrets.REPO_GOVERNANCE_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          echo "[*] Applying baseline branch ruleset to ${{ github.repository }}..."
+          gh api --method POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /repos/${{ github.repository }}/rulesets \
+            --input .github/rulesets/branch-ruleset.json
+          echo "[✓] Ruleset successfully enforced."

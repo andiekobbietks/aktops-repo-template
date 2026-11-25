@@ -1,0 +1,15 @@
+# OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node & Dependencies
+node_modules/
+npm-debug.log*
+
+# Local Environment Variables & Secrets
+.env
+.env.local
+*.pem
+*.key
+build_and_push.py
