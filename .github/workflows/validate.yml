@@ -1,0 +1,61 @@
+name: Validate AKTOps baseline
+
+on:
+  pull_request:
+    paths:
+      - '.github/rulesets/**'
+      - '.github/workflows/**'
+      - 'scripts/**'
+      - 'setup-governance.ps1'
+      - 'docs/**'
+      - 'README.md'
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - '.github/rulesets/**'
+      - '.github/workflows/**'
+      - 'scripts/**'
+      - 'setup-governance.ps1'
+      - 'docs/**'
+      - 'README.md'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate ruleset JSON
+        run: |
+          set -euo pipefail
+          jq -e '
+            .name == "AKTOps - SOP-SEC-042" and
+            .target == "branch" and
+            .enforcement == "active" and
+            (.conditions.ref_name.include | index("~DEFAULT_BRANCH")) and
+            ([.rules[].type] | index("deletion")) and
+            ([.rules[].type] | index("non_fast_forward")) and
+            ([.rules[].type] | index("required_linear_history")) and
+            ([.rules[].type] | index("pull_request"))
+          ' .github/rulesets/branch-ruleset.json > /dev/null
+
+      - name: Validate PowerShell syntax
+        shell: pwsh
+        run: |
+          $files = @("scripts/setup-governance.ps1", "scripts/verify-governance.ps1", "setup-governance.ps1")
+          foreach ($file in $files) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile((Join-Path $PWD $file), [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error "$file : $_" }
+              exit 1
+            }
+            Write-Host "PowerShell syntax OK: $file"
+          }
