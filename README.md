@@ -83,7 +83,7 @@ You can also inspect rulesets in **Repository Settings → Rules → Rulesets**.
 
 The workflow at .github/workflows/enforce-governance.yml supports manual execution and changes to the policy file on the default branch. It applies the same named ruleset using an idempotent create-or-update operation.
 
-The workflow needs a token with repository **Administration: write** permission. It first tries REPO_GOVERNANCE_PAT and falls back to GITHUB_TOKEN. The fallback works only when the repository/organisation token policy grants the required permission. Configure the PAT as a repository Actions secret only when required, and use the narrowest suitable token.
+The workflow requires a repository Actions secret named REPO_GOVERNANCE_PAT containing a fine-grained personal access token with repository **Administration: write** permission. GITHUB_TOKEN does not provide this repository administration permission. Restrict the token to the destination repository, protect the secret and rotate it according to your credential policy.
 
 ## Documentation
 
