@@ -39,7 +39,7 @@ Availability depends on GitHub plan, repository visibility, organisation policy 
 
 ## Token handling
 
-The provisioning identity needs repository Administration: write. Keep this privilege separate from ordinary build and deployment jobs. Use a fine-grained token restricted to the destination repository when a PAT is needed. Never commit credentials, include them in logs or expose them to untrusted pull-request code.
+The provisioning identity needs repository Administration: write. Keep this privilege separate from ordinary build and deployment jobs. The Actions workflow uses a fine-grained personal access token restricted to the destination repository and stored as REPO_GOVERNANCE_PAT; GITHUB_TOKEN does not expose repository Administration: write. Never commit credentials, include them in logs or expose them to untrusted pull-request code.
 
 ## Responsible claims
 
