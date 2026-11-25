@@ -35,14 +35,14 @@ try {
     }
 
     if ($ids.Count -eq 1) {
-        $args = @("api", "--method", "PUT", "/repos/$Repository/rulesets/$($ids[0])", "-H", "Accept: application/vnd.github+json", "-H", "X-GitHub-Api-Version: 2022-11-28", "--input", $RulesetFile)
-        & gh @args | Out-Null
+        $ghArgs = @("api", "--method", "PUT", "/repos/$Repository/rulesets/$($ids[0])", "-H", "Accept: application/vnd.github+json", "-H", "X-GitHub-Api-Version: 2022-11-28", "--input", $RulesetFile)
+        & gh @ghArgs | Out-Null
         if ($LASTEXITCODE -ne 0) { throw "Ruleset update failed." }
         Write-Host "Updated existing ruleset (ID $($ids[0]))."
     }
     else {
-        $args = @("api", "--method", "POST", "/repos/$Repository/rulesets", "-H", "Accept: application/vnd.github+json", "-H", "X-GitHub-Api-Version: 2022-11-28", "--input", $RulesetFile)
-        & gh @args | Out-Null
+        $ghArgs = @("api", "--method", "POST", "/repos/$Repository/rulesets", "-H", "Accept: application/vnd.github+json", "-H", "X-GitHub-Api-Version: 2022-11-28", "--input", $RulesetFile)
+        & gh @ghArgs | Out-Null
         if ($LASTEXITCODE -ne 0) { throw "Ruleset creation failed." }
         Write-Host "Created ruleset."
     }
